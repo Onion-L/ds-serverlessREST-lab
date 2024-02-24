@@ -7,8 +7,10 @@ const ddbDocClient = createDDbDocClient();
 export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {     // Note change
   try {
     console.log("Event: ", event);
-    const parameters  = event?.pathParameters;
+    const parameters = event?.pathParameters;
     const movieId = parameters?.movieId ? parseInt(parameters.movieId) : undefined;
+    const queryStringParameters = event?.queryStringParameters;
+    const includeCast = queryStringParameters?.cast === 'true';
 
     if (!movieId) {
       return {
@@ -36,9 +38,19 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {    
         body: JSON.stringify({ Message: "Invalid movie Id" }),
       };
     }
-    const body = {
+    let body = {
       data: commandOutput.Item,
     };
+
+    if (includeCast) {
+      const castData = await ddbDocClient.send(
+        new GetCommand({
+          TableName: process.env.CAST_TABLE_NAME, 
+          Key: { movieId: movieId },
+        })
+      );
+      body.cast = castData.Item ? castData.Item.cast : [];
+    }
 
     // Return Response
     return {

@@ -45,6 +45,7 @@ export class RestAPIStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(10),
         memorySize: 128,
         environment: {
+          CAST_TABLE_NAME: movieCastsTable.tableName,
           TABLE_NAME: moviesTable.tableName,
           REGION: 'eu-west-1',
         },
@@ -107,6 +108,8 @@ export class RestAPIStack extends cdk.Stack {
           }
         );
         
+        
+
         new custom.AwsCustomResource(this, "moviesddbInitData", {
           onCreate: {
             service: "DynamoDB",
@@ -130,7 +133,7 @@ export class RestAPIStack extends cdk.Stack {
         moviesTable.grantReadWriteData(newMovieFn)
         moviesTable.grantReadWriteData(deleteMovieFn)
         movieCastsTable.grantReadData(getMovieCastMembersFn);
-        
+
         const api = new apig.RestApi(this, "RestAPI", {
           description: "demo api",
           deployOptions: {
@@ -174,6 +177,8 @@ export class RestAPIStack extends cdk.Stack {
           "GET",
           new apig.LambdaIntegration(getMovieCastMembersFn, { proxy: true })
         );
+
+        
       }
     }
     

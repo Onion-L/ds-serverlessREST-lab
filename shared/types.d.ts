@@ -29,4 +29,7 @@ export type MovieCastMemberQueryParams = {
   actorName?: string;
   roleName?: string
 }
- 
+
+export type MovieCastQueryParams = {
+  cast: string
+}
